@@ -20,7 +20,7 @@ def callrebound(mass_pl,a_pl,r_pl,e_pl,i_pl,omega_pl,Omega_pl,M_pl,t=0,hashes=No
         sim.add(m = mass_pl[i], r = r_pl[i], a=a_pl[i], e=e_pl[i], inc=i_pl[i], Omega=Omega_pl[i], omega=omega_pl[i], M = M_pl[i])
         if hashes == None:
             sim.particles[-1].hash = i+1
-        else:
+        else: #i.e. when the simulation gets reloaded
             sim.particles[-1].hash = int(hashes[i])
     sim.move_to_com()
     return sim
@@ -44,7 +44,7 @@ def saveorbit(outfile,sim):
     fout.close()
     return
 
-def saveorbit2 (outfile, sim):
+def saveorbit2 (outfile, sim): #used for checking the smallest distance between all the particles
     #save the orbits elements to a file
     fout=open(outfile,mode="a")
     E=sim.calculate_energy()
@@ -93,7 +93,7 @@ def integrate(sim,times,E0,outfile,infofile,small_WJ_radius=False,fast_acc=False
     nstep=np.zeros(N_pl)
     end=np.zeros([N_pl,8])
     
-    if frombin or fromtxt:
+    if frombin or fromtxt:#if reloading a sim, tries to get info from the .pkl file
         if os.path.exists(infofile):
             datadump=pickle.load(open(infofile,"r"))
             init,end,nstep,finalstatus,npcount2,necount2,dE2,bad_dt2,time2 = datadump
@@ -188,7 +188,7 @@ def integrate(sim,times,E0,outfile,infofile,small_WJ_radius=False,fast_acc=False
         if checkpoint:
             checkpointfile=os.path.splitext(outfile)[0]+'.bin'
             sim.save(checkpointfile)
-        if  (time/(2*np.pi))%5e4< 2.2e2: 
+        if  (time/(2*np.pi))%5e4< 2.2e2: #update the .pkl file once every 50,000 years
             dE = np.abs((dEs - E0)/E0)
             #time = timing.time() - start_t
             #total number of planets left
@@ -299,10 +299,10 @@ def one_run(runnumber,infile="",HSR=None,small_WJ_radius=False,fast_acc=False,dt
     #print sim.collisions[0]
 
     ####create linear time step arr#
-    N_acc = t_max/acc_time
+    N_acc = (t_max-t)/acc_time
     if fast_acc:
         N_acc*=10.
-    times=np.linspace(0,t_max*2*np.pi,int(N_acc))
+    times=np.linspace(t+0,t_max*2*np.pi,int(N_acc))
     #################################
     #times = np.logspace(np.log10(t+1000),np.log10(t+t_max),Noutputs)
     E0 = sim.calculate_energy()

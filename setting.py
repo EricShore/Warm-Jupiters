@@ -11,7 +11,7 @@ P_inner=7.
 #parallel settings
 max_runs=1
 num_proc = 1
-nnodes=900
+nnodes=200
 
 #default configuration
 N_pl = np.random.random_integers(7,11)
@@ -37,6 +37,7 @@ restartinput="testeject.txt"
 #restart from binary file
 frombin=False #USE ONLY FOR RESTARTING RUNS
 binfile=""
+#restarting from a .txt file
 fromtxt = False
 txtfile =""
 

@@ -13,7 +13,7 @@ def main():
 	lines = fout.readlines()
 	fout.close()
         j = 1
-        while(True):
+        while(True):#looks for the last line with text (as opposed to an empty one)
             split_line = lines[-j].split()
             if len(split_line)>0:
                 break
@@ -21,8 +21,8 @@ def main():
             if (j>=10000):
                 print "max loops"
                 break
-        endtime = float(lines[-j].split()[0])/(2*np.pi)
-	if endtime<t_max:
+        endtime = float(lines[-j].split()[0])/(2*np.pi) #time at the end of the sim
+	if endtime<t_max:#restats all sims where the current time is less than the target one
        #if not os.path.exists(pklfile):
             subfile=basename+"qsubrebound_%d" % i
             submit(basename,subfileauto="qsubrebound_%d" % i, start=1+max_runs*i)

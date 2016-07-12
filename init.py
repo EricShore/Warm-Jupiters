@@ -4,7 +4,7 @@ import scipy as sp
 from setting import *
 from scipy.stats import rayleigh
 
-def init_orbit(runnumber, small_WJ_radius = False):
+def init_orbit(runnumber, small_WJ_radius = True):
     #initial the basic param array for a system
     
     mass_pl=np.zeros(N_pl)
@@ -36,11 +36,11 @@ def init_orbit(runnumber, small_WJ_radius = False):
         Omega_pl=2.*np.pi*np.random.rand(N_pl)
         M_pl=2.*np.pi*np.random.rand(N_pl)
         mass_pl = np.random.normal(loc=5*M_earth,scale = 2*M_earth,size=N_pl)
-        if any(mass_pl<0.5*M_earth) or any(mass_pl>10*M_earth):
+        if any(mass_pl<0.5*M_earth) or any(mass_pl>10*M_earth): #ensures mass is between 0.5 and 10 Earth Masses
             continue
         r_pl =(3*mass_pl/(4*np.pi*density))**(1./3.)
         K = np.random.normal(loc=k_Hill,scale=2)
-        if K <=0:
+        if K <=0: #ensures seperation between planets is positive
             continue
         P_min =rayleigh.rvs(scale=P_inner/(365.))
         a_min = P_min**(2./3.)
@@ -48,28 +48,28 @@ def init_orbit(runnumber, small_WJ_radius = False):
         in_range=[]
         a_pl[0] = a_min
         
-        for i in range(1,N_pl):
+        for i in range(1,N_pl): #set up ladder of planets 
             m_ratio = 2*(3/(mass_pl[i-1]+mass_pl[i]))**(1./3.)
             a_pl[i] =(K/m_ratio + 1)/(1 - K/m_ratio)*a_pl[i-1]
             if a_pl[i]>0.1 and a_pl[i]<0.4:
                 in_range.append(i)
-        if len(in_range)>0:
+        if len(in_range)>0: #ensures there is always at least 1 planet in the WJ range
             accreting_planet = np.random.choice(in_range)
-            if accreting_planet > N_pl-2:
+            if accreting_planet > N_pl-2: #ensures each WJ has at least 2 outer neighbors
                 continue
             mass_pl[accreting_planet]=12*M_earth
             loop=False
-            if small_WJ_radius:
+            if small_WJ_radius: #settings for different Warm Jupiter radii
                 r_pl[accreting_planet]=a_pl[accreting_planet]*(1-e_pl[accreting_planet])*(mass_pl[accreting_planet]/3)**(1./3.)/10.
             else:
                 r_pl[accreting_planet]=a_pl[accreting_planet]*(1-e_pl[accreting_planet])*(mass_pl[accreting_planet]/3)**(1./3.)
-            for i in range(accreting_planet,N_pl):
+            for i in range(accreting_planet,N_pl): #adjust ladder of planets for WJ
                 if i>0:
                     m_ratio = 2*(3/(mass_pl[i-1]+mass_pl[i]))**(1./3.)
                     a_pl[i] =(K/m_ratio + 1)/(1 - K/m_ratio)*a_pl[i-1]
     #print mass_pl, a_pl, r_pl, e_pl, i_pl, omega_pl, Omega_pl, M_pl
     return [mass_pl,a_pl,r_pl,e_pl,i_pl,omega_pl,Omega_pl,M_pl]
-def init_orbit2(randomstat=1):
+def init_orbit2(randomstat=1):# to be used for manually restarting from a text file
    mass_pl = np.array([0.000002546206, 0.000018003167, 0.000040000000, 0.000013145077, 0.000019332091])
    r_pl = np.array([0.000039086455,0.000075020173, 0.002545837352, 0.000067553750, 0.000076822429])
    a_pl = np.array([0.076640105897, 0.090364905459,0.114113732060,0.143132603639, 0.173436994996])
@@ -122,7 +122,7 @@ def read_init(infile):
     M_pl=data[:,10]
     return [t,mass_pl,a_pl,r_pl,e_pl,i_pl,omega_pl,Omega_pl,M_pl]
 
-def read_init2(infile):
+def read_init2(infile):# used for reading from a text file
     data = np.loadtxt(infile, skiprows=1, unpack = True)
     data2 = data[:,:min(np.where(data[0]== max(data[0]))[0])]
     t = data2[0][-1]
